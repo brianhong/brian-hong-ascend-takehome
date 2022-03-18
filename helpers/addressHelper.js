@@ -1,4 +1,4 @@
-const {fetchAddressCoordinates} = require('../services/googleMaps.service')
+const {fetchAddressCoordinates, GoogleRequestError} = require('../services/googleMaps.service')
 const db = require('../db')
 const hash = require('object-hash')
 
@@ -76,7 +76,13 @@ const convertAddressesForResponse = async (addressObj, convertedAddress) => {
         
         return result;
     } catch (err) {
-        throw err;
+        if (err instanceof GoogleRequestError) {
+            return {
+                errorMessage: `Could not get info for address ${convertedAddress}`
+            }
+        } else {
+            throw err;
+        }
     }
 }
 

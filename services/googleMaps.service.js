@@ -24,5 +24,6 @@ const fetchAddressCoordinates = async (inputAddress) => {
 }
 
 module.exports = {
-    fetchAddressCoordinates
+    fetchAddressCoordinates,
+    GoogleRequestError
 }
