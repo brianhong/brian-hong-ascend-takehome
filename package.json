@@ -17,5 +17,8 @@
     "node-cache": "^5.1.2",
     "object-hash": "^3.0.0",
     "pg": "^8.7.3"
+  },
+  "devDependencies": {
+    "jest": "^27.5.1"
   }
 }
