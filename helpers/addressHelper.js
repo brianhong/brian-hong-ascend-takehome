@@ -3,7 +3,7 @@ const db = require('../db')
 const hash = require('object-hash')
 
 const NodeCache = require('node-cache')
-const cache = new NodeCache()
+const addressCache = new NodeCache()
 
 function MissingAddressKeyError(missingKeys) {
     this.message = `Missing key(s): ${missingKeys.join(',')}`;
@@ -29,7 +29,7 @@ const validateAddresses = async (reqBody) => {
             convertedAddresses[convertAddressForGoogle(address)] = address
         });
 
-        const addressValidationRequests = Object.entries(convertedAddresses).map(([convertedAddress, addressObj]) => convertAddressesForResponse(addressObj, convertedAddress))
+        const addressValidationRequests = Object.entries(convertedAddresses).map(([convertedAddress, addressObj]) => convertAddressesForResponse(addressCache, addressObj, convertedAddress))
 
         const result = await Promise.all(addressValidationRequests)
         return result;
@@ -62,7 +62,7 @@ function convertAddressForGoogle(address) {
     return `${address_line_one}, ${city}, ${state}, ${zip_code}`
 }
 
-const convertAddressesForResponse = async (addressObj, convertedAddress) => {
+const convertAddressesForResponse = async (cache, addressObj, convertedAddress) => {
     try {
         const cacheCheck = cache.get(convertedAddress)
         if (cacheCheck) {
@@ -72,7 +72,7 @@ const convertAddressesForResponse = async (addressObj, convertedAddress) => {
         const coordinates = await fetchAddressCoordinates(convertedAddress)
         const result = {...addressObj, "latitude": coordinates.lat, "longitude": coordinates.lng}
 
-        await persistAddressData(convertedAddress, result)
+        await persistAddressData(cache, convertedAddress, result)
         
         return result;
     } catch (err) {
@@ -86,7 +86,7 @@ const convertAddressesForResponse = async (addressObj, convertedAddress) => {
     }
 }
 
-const persistAddressData = async (convertedAddressKey, addressObj) => {
+const persistAddressData = async (cache, convertedAddressKey, addressObj) => {
     try {
         const insertQuery = 'INSERT INTO validated_addresses(address_hash, address_line_one, state, city, zip_code, lat, lng) VALUES($1, $2, $3, $4, $5, $6, $7)';
         const { address_line_one, state, city, zip_code, latitude, longitude} = addressObj;
@@ -95,12 +95,16 @@ const persistAddressData = async (convertedAddressKey, addressObj) => {
         await db.query(insertQuery, values)
         cache.set(convertedAddressKey, addressObj)
     } catch (err) {
-        console.log(err)
+        console.error(err)
         throw new PersistenceError();
     }
 }
 
 module.exports = {
     validateAddresses,
-    NoBodyError
+    convertAddressForGoogle,
+    convertAddressesForResponse,
+    persistAddressData,
+    NoBodyError,
+    MissingAddressKeyError
 }
