@@ -1,5 +1,6 @@
 const {fetchAddressCoordinates} = require('../services/googleMaps.service')
 const db = require('../db')
+const hash = require('object-hash')
 
 const NodeCache = require('node-cache')
 const cache = new NodeCache()
@@ -81,9 +82,9 @@ const convertAddressesForResponse = async (addressObj, convertedAddress) => {
 
 const persistAddressData = async (convertedAddressKey, addressObj) => {
     try {
-        const insertQuery = 'INSERT INTO validated_addresses(address_line_one, state, city, zip_code, lat, lng) VALUES($1, $2, $3, $4, $5, $6)';
+        const insertQuery = 'INSERT INTO validated_addresses(address_hash, address_line_one, state, city, zip_code, lat, lng) VALUES($1, $2, $3, $4, $5, $6, $7)';
         const { address_line_one, state, city, zip_code, latitude, longitude} = addressObj;
-        const values = [address_line_one, state, city, zip_code, latitude, longitude]
+        const values = [hash(addressObj), address_line_one, state, city, zip_code, latitude, longitude]
 
         await db.query(insertQuery, values)
         cache.set(convertedAddressKey, addressObj)
