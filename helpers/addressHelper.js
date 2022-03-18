@@ -101,5 +101,6 @@ const persistAddressData = async (convertedAddressKey, addressObj) => {
 }
 
 module.exports = {
-    validateAddresses
+    validateAddresses,
+    NoBodyError
 }

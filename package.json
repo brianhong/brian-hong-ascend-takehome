@@ -17,8 +17,5 @@
     "node-cache": "^5.1.2",
     "object-hash": "^3.0.0",
     "pg": "^8.7.3"
-  },
-  "devDependencies": {
-    "jasmine": "^4.0.2"
   }
 }
