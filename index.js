@@ -24,12 +24,11 @@ app.post('/validateAddress', async (req, res) => {
     }
 })
 
-app.get('*', (req, res) => {
-    res.status(404).send('Route not found')
-})
-app.post('*', (req, res) => {
-    res.status(404).send('Route not found')
-})
+app.use((req, res, next) => {
+    res.status(404).json({
+        message: 'Route not found.'
+    })
+});
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`);
